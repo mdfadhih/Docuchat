@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import axios from "axios";
 
 interface Props {
   onUploaded: (filename: string) => void;
@@ -21,18 +20,32 @@ export default function FileUpload({ onUploaded }: Props) {
       const form = new FormData();
       form.append("pdf", files[0]);
 
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+
       try {
         setProgress("Generating embeddings...");
-        const res = await axios.post(
-          `${import.meta.env.VITE_API_URL || "http://localhost:3001"}/api/upload`,
-          form,
-        );
-        setProgress(`Indexed ${res.data.chunks} chunks`);
+
+        // Use fetch instead of axios — more reliable for FormData on deployed environments
+        const res = await fetch(`${API_URL}/api/upload`, {
+          method: "POST",
+          body: form,
+          // DO NOT set Content-Type header — browser sets it automatically
+          // with the correct multipart boundary when using FormData
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || `Upload failed: ${res.status}`);
+        }
+
+        const data = await res.json();
+        setProgress(`Indexed ${data.chunks} chunks`);
         setStatus("done");
         setTimeout(() => onUploaded(files[0].name), 800);
-      } catch {
+      } catch (err: any) {
+        console.error("Upload error:", err);
         setStatus("error");
-        setProgress("Upload failed. Try again.");
+        setProgress(err.message || "Upload failed. Try again.");
       }
     },
     [onUploaded],
