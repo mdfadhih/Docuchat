@@ -9,7 +9,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://docu-chat.vercel.app", // your Vercel URL
+      "https://docuchat-navy.vercel.app/", // your Vercel URL
       /\.vercel\.app$/, // all Vercel preview URLs
     ],
   }),
