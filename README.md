@@ -40,38 +40,42 @@ Built as a portfolio project demonstrating end-to-end AI engineering — from ve
 ## Tech Stack
 
 ### Frontend
-| Technology | Purpose |
-|---|---|
-| React 18 + TypeScript | UI framework |
-| Vite | Build tool |
-| Tailwind CSS | Styling |
-| react-dropzone | PDF drag & drop |
-| Fetch API | HTTP requests + streaming |
+
+| Technology            | Purpose                   |
+| --------------------- | ------------------------- |
+| React 18 + TypeScript | UI framework              |
+| Vite                  | Build tool                |
+| Tailwind CSS          | Styling                   |
+| react-dropzone        | PDF drag & drop           |
+| Fetch API             | HTTP requests + streaming |
 
 ### Backend
-| Technology | Purpose |
-|---|---|
-| Node.js + Express | REST API server |
-| Multer | PDF file upload handling |
-| pdf-parse | PDF text extraction |
-| @google/genai | Gemini AI SDK |
+
+| Technology        | Purpose                  |
+| ----------------- | ------------------------ |
+| Node.js + Express | REST API server          |
+| Multer            | PDF file upload handling |
+| pdf-parse         | PDF text extraction      |
+| @google/genai     | Gemini AI SDK            |
 
 ### AI & Database
-| Technology | Purpose |
-|---|---|
-| Google Gemini API | Embeddings + text generation |
-| gemini-embedding-001 | 768-dim vector embeddings |
-| gemini-2.0-flash | Streaming answer generation |
-| Supabase (PostgreSQL) | Vector storage with pgvector |
-| Cosine Similarity | JavaScript-based semantic search |
+
+| Technology            | Purpose                          |
+| --------------------- | -------------------------------- |
+| Google Gemini API     | Embeddings + text generation     |
+| gemini-embedding-001  | 768-dim vector embeddings        |
+| gemini-2.0-flash      | Streaming answer generation      |
+| Supabase (PostgreSQL) | Vector storage with pgvector     |
+| Cosine Similarity     | JavaScript-based semantic search |
 
 ### DevOps
-| Technology | Purpose |
-|---|---|
-| Vercel | Frontend hosting + CDN |
-| Render | Backend hosting |
-| GitHub Actions | CI/CD pipeline |
-| Git | Version control |
+
+| Technology     | Purpose                |
+| -------------- | ---------------------- |
+| Vercel         | Frontend hosting + CDN |
+| Render         | Backend hosting        |
+| GitHub Actions | CI/CD pipeline         |
+| Git            | Version control        |
 
 ---
 
@@ -240,20 +244,20 @@ npm run dev
 
 ### Backend → Render
 
-| Setting | Value |
-|---|---|
-| Root Directory | `backend` |
-| Build Command | `npm install` |
-| Start Command | `node server.js` |
+| Setting               | Value                                            |
+| --------------------- | ------------------------------------------------ |
+| Root Directory        | `backend`                                        |
+| Build Command         | `npm install`                                    |
+| Start Command         | `node server.js`                                 |
 | Environment Variables | `GEMINI_API_KEY`, `SUPABASE_URL`, `SUPABASE_KEY` |
 
 ### Frontend → Vercel
 
-| Setting | Value |
-|---|---|
-| Root Directory | `frontend` |
-| Framework Preset | Vite |
-| Build Command | `npm run build` |
+| Setting               | Value                                               |
+| --------------------- | --------------------------------------------------- |
+| Root Directory        | `frontend`                                          |
+| Framework Preset      | Vite                                                |
+| Build Command         | `npm run build`                                     |
 | Environment Variables | `VITE_API_URL=https://your-render-url.onrender.com` |
 
 ---
@@ -262,17 +266,17 @@ npm run dev
 
 ### Backend (`backend/.env`)
 
-| Variable | Description |
-|---|---|
-| `GEMINI_API_KEY` | Google AI Studio API key |
-| `SUPABASE_URL` | Your Supabase project URL |
-| `SUPABASE_KEY` | Supabase anon/public key |
-| `PORT` | Server port (default: 3001) |
+| Variable         | Description                 |
+| ---------------- | --------------------------- |
+| `GEMINI_API_KEY` | Google AI Studio API key    |
+| `SUPABASE_URL`   | Your Supabase project URL   |
+| `SUPABASE_KEY`   | Supabase anon/public key    |
+| `PORT`           | Server port (default: 3001) |
 
 ### Frontend (`frontend/.env`)
 
-| Variable | Description |
-|---|---|
+| Variable       | Description                        |
+| -------------- | ---------------------------------- |
 | `VITE_API_URL` | Backend URL (Render in production) |
 
 ---
@@ -280,11 +284,13 @@ npm run dev
 ## API Reference
 
 ### `POST /api/upload`
+
 Upload a PDF and generate vector embeddings.
 
 **Request:** `multipart/form-data` with field `pdf` (File)
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -299,14 +305,17 @@ Upload a PDF and generate vector embeddings.
 ```
 
 ### `POST /api/query`
+
 Ask a question and receive a streaming answer.
 
 **Request:**
+
 ```json
 { "question": "What is SAML?" }
 ```
 
 **Response:** Server-Sent Events stream
+
 ```
 data: {"text":"SAML"}
 data: {"text":" stands"}
@@ -315,6 +324,7 @@ data: [DONE]
 ```
 
 ### `GET /health`
+
 Health check endpoint.
 
 **Response:** `{ "status": "ok" }`

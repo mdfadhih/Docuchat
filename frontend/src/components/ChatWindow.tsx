@@ -1,9 +1,19 @@
 import { useState, useRef, useEffect } from "react";
+import CitationList from "./CitationList";
+
+interface Citation {
+  index: number;
+  content: string;
+  preview: string;
+  score: number | null;
+  filename: string;
+}
 
 interface Message {
   role: "user" | "ai";
   text: string;
   loading?: boolean;
+  citations?: Citation[];
 }
 
 interface Props {
@@ -29,7 +39,10 @@ export default function ChatWindow({ suggestions }: Props) {
     setLoading(true);
 
     setMessages((m) => [...m, { role: "user", text: q }]);
-    setMessages((m) => [...m, { role: "ai", text: "", loading: true }]);
+    setMessages((m) => [
+      ...m,
+      { role: "ai", text: "", loading: true, citations: [] },
+    ]);
 
     const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
@@ -43,23 +56,36 @@ export default function ChatWindow({ suggestions }: Props) {
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
       let aiText = "";
+      let citations: Citation[] = [];
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
+
         const lines = decoder.decode(value).split("\n");
         for (const line of lines) {
-          if (line.startsWith("data: ") && line !== "data: [DONE]") {
-            try {
-              const { text } = JSON.parse(line.slice(6));
-              aiText += text;
+          if (!line.startsWith("data: ") || line === "data: [DONE]") continue;
+
+          try {
+            const parsed = JSON.parse(line.slice(6));
+
+            if (parsed.type === "citations") {
+              // Citations arrive first — store them immediately
+              citations = parsed.citations;
               setMessages((m) => [
                 ...m.slice(0, -1),
-                { role: "ai", text: aiText, loading: false },
+                { role: "ai", text: "", loading: true, citations },
               ]);
-            } catch {
-              /* skip */
+            } else if (parsed.type === "text") {
+              // Stream the answer text
+              aiText += parsed.text;
+              setMessages((m) => [
+                ...m.slice(0, -1),
+                { role: "ai", text: aiText, loading: false, citations },
+              ]);
             }
+          } catch {
+            /* skip malformed chunks */
           }
         }
       }
@@ -70,6 +96,7 @@ export default function ChatWindow({ suggestions }: Props) {
           role: "ai",
           text: "Something went wrong. Please try again.",
           loading: false,
+          citations: [],
         },
       ]);
     }
@@ -85,23 +112,32 @@ export default function ChatWindow({ suggestions }: Props) {
         {messages.map((m, i) => (
           <div key={i} className={`message ${m.role}`}>
             {m.role === "ai" && <span className="ai-label">◈</span>}
-            <div className="bubble">
-              {m.loading ? (
-                <span className="typing">
-                  <span />
-                  <span />
-                  <span />
-                </span>
-              ) : (
-                <span style={{ whiteSpace: "pre-wrap" }}>{m.text}</span>
-              )}
+            <div className="msg-content">
+              <div className="bubble">
+                {m.loading ? (
+                  <span className="typing">
+                    <span />
+                    <span />
+                    <span />
+                  </span>
+                ) : (
+                  <span style={{ whiteSpace: "pre-wrap" }}>{m.text}</span>
+                )}
+              </div>
+
+              {/* Citations appear below the answer bubble */}
+              {m.role === "ai" &&
+                !m.loading &&
+                m.citations &&
+                m.citations.length > 0 && (
+                  <CitationList citations={m.citations} />
+                )}
             </div>
           </div>
         ))}
         <div ref={bottomRef} />
       </div>
 
-      {/* Dynamic suggestions from document */}
       {showSuggestions && (
         <div className="suggestions">
           {suggestions.map((s) => (

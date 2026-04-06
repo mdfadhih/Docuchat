@@ -37,6 +37,18 @@ ANSWER:`;
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
 
+    // ── Step 1: Send citations FIRST before streaming answer ──
+    const citations = relevantChunks.map((c, i) => ({
+      index: i + 1,
+      content: c.content,
+      preview: c.content.slice(0, 300) + (c.content.length > 300 ? "..." : ""),
+      score: c.score ? Math.round(c.score * 100) : null,
+      filename: c.metadata?.filename || "document",
+    }));
+
+    res.write(`data: ${JSON.stringify({ type: "citations", citations })}\n\n`);
+
+    // ── Step 2: Stream the AI answer ──
     const streamResult = await ai.models.generateContentStream({
       model: "gemini-2.5-flash",
       contents: prompt,
@@ -44,12 +56,13 @@ ANSWER:`;
 
     for await (const chunk of streamResult) {
       const text = chunk.text;
-      if (text) res.write(`data: ${JSON.stringify({ text })}\n\n`);
+      if (text)
+        res.write(`data: ${JSON.stringify({ type: "text", text })}\n\n`);
     }
 
     res.write("data: [DONE]\n\n");
     res.end();
-    console.log("Streamed successfully");
+    console.log("Streamed successfully with", citations.length, "citations");
   } catch (err) {
     console.error("QUERY ERROR:", err.message);
     res.status(500).json({ error: err.message });

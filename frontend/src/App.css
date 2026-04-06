@@ -52,19 +52,16 @@ body {
   gap: 10px;
   margin-bottom: 8px;
 }
-
 .logo-icon {
   color: var(--accent);
   font-size: 20px;
 }
-
 .logo-text {
   font-size: 15px;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-
 .tagline {
   font-size: 12px;
   color: var(--muted);
@@ -83,20 +80,12 @@ body {
 .upload-hero {
   text-align: center;
 }
-
 .upload-hero h1 {
   font-family: var(--font-display);
   font-size: clamp(40px, 8vw, 72px);
   line-height: 1.1;
   margin-bottom: 16px;
-  color: var(--text);
 }
-
-.upload-hero h1 em {
-  color: var(--accent);
-  font-style: italic;
-}
-
 .upload-hero p {
   font-size: 14px;
   color: var(--muted);
@@ -112,16 +101,14 @@ body {
   padding: 56px 40px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
   background: var(--surface);
 }
-
 .dropzone:hover,
 .dropzone.drag-active {
   border-color: var(--accent);
   background: var(--accent-dim);
 }
-
 .dropzone.done {
   border-color: var(--accent);
   border-style: solid;
@@ -129,26 +116,21 @@ body {
 .dropzone.error {
   border-color: #ff4747;
 }
-
 .drop-icon {
   font-size: 32px;
   margin-bottom: 16px;
   color: var(--accent);
 }
-
 .drop-main {
   font-size: 16px;
   font-weight: 500;
   margin-bottom: 8px;
-  color: var(--text);
 }
-
 .drop-sub {
   font-size: 13px;
   color: var(--muted);
 }
 
-/* SPINNER */
 .spinner {
   width: 28px;
   height: 28px;
@@ -158,7 +140,6 @@ body {
   animation: spin 0.8s linear infinite;
   margin: 0 auto 16px;
 }
-
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -178,7 +159,6 @@ body {
   justify-content: space-between;
   padding: 0 0 20px;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 0;
 }
 
 .file-badge {
@@ -201,7 +181,6 @@ body {
   cursor: pointer;
   transition: all 0.15s;
 }
-
 .new-doc:hover {
   border-color: var(--text);
   color: var(--text);
@@ -231,7 +210,6 @@ body {
   gap: 12px;
   align-items: flex-start;
 }
-
 .message.user {
   flex-direction: row-reverse;
 }
@@ -243,20 +221,27 @@ body {
   margin-top: 4px;
 }
 
+/* msg-content wraps bubble + citations */
+.msg-content {
+  display: flex;
+  flex-direction: column;
+  max-width: 78%;
+}
+.message.user .msg-content {
+  align-items: flex-end;
+}
+
 .bubble {
-  max-width: 75%;
   padding: 14px 18px;
   border-radius: var(--radius);
   font-size: 14px;
   line-height: 1.7;
 }
-
 .message.ai .bubble {
   background: var(--ai-bg);
   border: 1px solid var(--border);
   color: var(--text);
 }
-
 .message.user .bubble {
   background: var(--accent);
   color: #0e0e0f;
@@ -270,7 +255,6 @@ body {
   align-items: center;
   height: 20px;
 }
-
 .typing span {
   width: 6px;
   height: 6px;
@@ -278,14 +262,12 @@ body {
   border-radius: 50%;
   animation: dot 1.2s infinite;
 }
-
 .typing span:nth-child(2) {
   animation-delay: 0.2s;
 }
 .typing span:nth-child(3) {
   animation-delay: 0.4s;
 }
-
 @keyframes dot {
   0%,
   60%,
@@ -299,6 +281,91 @@ body {
   }
 }
 
+/* ── CITATIONS ── */
+.citations {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cite-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 2px;
+}
+
+.cite-icon {
+  font-size: 12px;
+}
+
+.cite-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cite-card:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.cite-expanded {
+  border-color: rgba(232, 255, 71, 0.4);
+}
+
+.cite-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.cite-num {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.cite-preview {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
+  flex: 1;
+  font-style: italic;
+}
+
+.cite-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.cite-score {
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 99px;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.cite-toggle {
+  font-size: 9px;
+  color: var(--muted);
+}
+
 /* SUGGESTIONS */
 .suggestions {
   display: flex;
@@ -306,7 +373,6 @@ body {
   flex-wrap: wrap;
   padding: 0 0 16px;
 }
-
 .suggestion {
   background: none;
   border: 1px solid var(--border);
@@ -318,7 +384,6 @@ body {
   cursor: pointer;
   transition: all 0.15s;
 }
-
 .suggestion:hover {
   border-color: var(--accent);
   color: var(--accent);
@@ -344,7 +409,6 @@ body {
   outline: none;
   transition: border-color 0.15s;
 }
-
 .chat-input:focus {
   border-color: var(--accent);
 }
@@ -365,7 +429,6 @@ body {
   transition: all 0.15s;
   flex-shrink: 0;
 }
-
 .send-btn:hover:not(:disabled) {
   transform: scale(1.05);
 }
@@ -374,71 +437,36 @@ body {
   cursor: default;
 }
 
-/* ── Mobile responsive ────────────────────── */
+/* MOBILE */
 @media (max-width: 768px) {
   .app {
     padding: 0 16px;
   }
-
   .header {
     padding: 20px 0 16px;
     margin-bottom: 24px;
   }
-
   .upload-hero h1 {
     font-size: 36px;
   }
-
   .dropzone {
     padding: 40px 20px;
   }
-
-  /* Fix keyboard pushing input off screen on mobile */
   .chat-section {
-    height: 100dvh; /* dvh = dynamic viewport height */
-    padding-bottom: 0;
+    height: 100dvh;
   }
-
-  .messages {
-    padding: 16px 0;
-  }
-
   .bubble {
-    max-width: 90%; /* wider bubbles on small screens */
-    font-size: 15px; /* larger for readability */
+    font-size: 15px;
   }
-
-  /* Prevent iOS auto-zoom on input focus (must be 16px+) */
   .chat-input {
     font-size: 16px;
     padding: 12px 14px;
   }
-
   .send-btn {
     width: 44px;
     height: 44px;
-    flex-shrink: 0;
   }
-
-  .suggestions {
-    gap: 6px;
-  }
-
-  .suggestion {
-    font-size: 11px;
-    padding: 6px 12px;
-  }
-
-  .chat-header {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .file-badge {
-    font-size: 11px;
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .msg-content {
+    max-width: 92%;
   }
 }
