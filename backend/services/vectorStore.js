@@ -6,6 +6,23 @@ const supabase = createClient(
   process.env.SUPABASE_KEY,
 );
 
+// ── Clear ALL documents (call before uploading a new PDF) ──
+async function clearAllChunks() {
+  const { error } = await supabase.from("documents").delete().neq("id", 0); // delete all rows (neq 0 matches everything)
+
+  if (error) {
+    console.error("Clear error:", error.message);
+    throw new Error("Failed to clear documents: " + error.message);
+  }
+
+  const { count } = await supabase
+    .from("documents")
+    .select("*", { count: "exact", head: true });
+
+  console.log("Documents after clear:", count);
+}
+
+// ── Store new chunks ──
 async function storeChunks(chunks, filename) {
   console.log("Storing", chunks.length, "chunks...");
   for (let i = 0; i < chunks.length; i++) {
@@ -20,6 +37,7 @@ async function storeChunks(chunks, filename) {
   }
 }
 
+// ── Search similar chunks ──
 async function searchSimilar(query, limit = 4) {
   console.log("Searching:", query.slice(0, 50));
 
@@ -31,17 +49,18 @@ async function searchSimilar(query, limit = 4) {
     .select("id, content, metadata, embedding");
 
   if (error) throw new Error(error.message);
-  if (!allDocs || allDocs.length === 0) return [];
+  if (!allDocs || allDocs.length === 0) {
+    console.log("No documents in database");
+    return [];
+  }
 
-  console.log("Total docs fetched:", allDocs.length);
+  console.log("Total docs:", allDocs.length);
 
   const queryVec = Array.from(embeddingArr).map(Number);
 
   function cosineSim(a, queryVec) {
-    // embedding from Supabase comes back as array or string — handle both
     let b;
     if (typeof a === "string") {
-      // parse "[0.1,0.2,...]" string format
       b = a
         .replace(/[\[\]]/g, "")
         .split(",")
@@ -51,7 +70,6 @@ async function searchSimilar(query, limit = 4) {
     } else {
       return 0;
     }
-
     let dot = 0,
       normA = 0,
       normB = 0;
@@ -78,9 +96,7 @@ async function searchSimilar(query, limit = 4) {
     "Top scores:",
     top.map((d) => d.score.toFixed(4)),
   );
-  console.log("Results:", top.length);
-
   return top;
 }
 
-module.exports = { storeChunks, searchSimilar };
+module.exports = { clearAllChunks, storeChunks, searchSimilar };
