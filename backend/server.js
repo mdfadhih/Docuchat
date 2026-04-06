@@ -4,26 +4,40 @@ const cors = require("cors");
 
 const app = express();
 
-// Middleware MUST come before routes
+// CORS — allow your Vercel domain + localhost
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://docuchat-navy.vercel.app/", // your Vercel URL
-      /\.vercel\.app$/, // all Vercel preview URLs
-    ],
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, Postman, curl)
+      if (!origin) return callback(null, true);
+
+      const allowed = ["http://localhost:5173", "http://localhost:3001"];
+
+      // Allow ANY vercel.app subdomain
+      if (origin.endsWith(".vercel.app")) return callback(null, true);
+      // Allow any onrender.com (for testing)
+      if (origin.endsWith(".onrender.com")) return callback(null, true);
+      // Allow specific origins
+      if (allowed.includes(origin)) return callback(null, true);
+
+      // Block everything else
+      callback(new Error("CORS not allowed: " + origin));
+    },
+    credentials: true,
   }),
 );
-app.use(express.json());
+
+app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// Test endpoint to confirm body parsing works
+// Test endpoints
 app.post("/test", (req, res) => {
-  console.log("Body received:", req.body);
   res.json({ received: req.body });
 });
 
-app.get("/health", (req, res) => res.json({ status: "ok" }));
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
 
 // Routes
 const uploadRoute = require("./routes/upload");
