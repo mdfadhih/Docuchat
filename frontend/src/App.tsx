@@ -8,17 +8,19 @@ type AppState = "upload" | "chat";
 export default function App() {
   const [appState, setAppState] = useState<AppState>("upload");
   const [filename, setFilename] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
 
-  function handleUploaded(name: string) {
-    console.log("Upload complete, switching to chat. Filename:", name);
+  function handleUploaded(name: string, docSuggestions: string[]) {
+    console.log("Upload complete:", name, docSuggestions);
     setFilename(name);
+    setSuggestions(docSuggestions);
     setAppState("chat");
   }
 
   function handleNewDocument() {
-    console.log("Resetting to upload state");
     setAppState("upload");
     setFilename("");
+    setSuggestions([]);
   }
 
   return (
@@ -52,11 +54,18 @@ export default function App() {
           <div className="chat-section">
             <div className="chat-header">
               <span className="file-badge">◈ {filename}</span>
-              <button className="new-doc" onClick={handleNewDocument}>
+              <button
+                className="new-doc"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  handleNewDocument();
+                }}
+              >
                 + New document
               </button>
             </div>
-            <ChatWindow />
+            <ChatWindow suggestions={suggestions} />
           </div>
         )}
       </main>

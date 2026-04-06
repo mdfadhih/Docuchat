@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 
 interface Props {
-  onUploaded: (filename: string) => void;
+  onUploaded: (filename: string, suggestions: string[]) => void;
 }
 
 export default function FileUpload({ onUploaded }: Props) {
@@ -21,17 +21,9 @@ export default function FileUpload({ onUploaded }: Props) {
       setProgress("Uploading document...");
 
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
-      console.log("Uploading to:", `${API_URL}/api/upload`);
 
       const formData = new FormData();
       formData.append("pdf", file, file.name);
-
-      // Verify FormData has the file
-      const entry = formData.get("pdf");
-      console.log(
-        "FormData pdf field:",
-        entry instanceof File ? `File: ${(entry as File).name}` : "NOT A FILE",
-      );
 
       try {
         setProgress("Generating embeddings...");
@@ -39,13 +31,9 @@ export default function FileUpload({ onUploaded }: Props) {
         const response = await fetch(`${API_URL}/api/upload`, {
           method: "POST",
           body: formData,
-          // CRITICAL: Do NOT set Content-Type header
-          // Browser must set it automatically with multipart boundary
         });
 
         const responseText = await response.text();
-        console.log("Upload response:", response.status, responseText);
-
         if (!response.ok) {
           throw new Error(
             `Upload failed (${response.status}): ${responseText}`,
@@ -54,9 +42,18 @@ export default function FileUpload({ onUploaded }: Props) {
 
         const data = JSON.parse(responseText);
         console.log("Upload success:", data);
+
         setProgress(`Indexed ${data.chunks} chunks`);
         setStatus("done");
-        setTimeout(() => onUploaded(file.name), 600);
+
+        // Pass both filename AND document-specific suggestions
+        const suggestions = data.suggestions || [
+          "Summarise this document",
+          "What are the key points?",
+          "What is this document about?",
+        ];
+
+        setTimeout(() => onUploaded(file.name, suggestions), 600);
       } catch (err: any) {
         console.error("Upload failed:", err.message);
         setStatus("error");

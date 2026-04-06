@@ -6,7 +6,11 @@ interface Message {
   loading?: boolean;
 }
 
-export default function ChatWindow() {
+interface Props {
+  suggestions: string[];
+}
+
+export default function ChatWindow({ suggestions }: Props) {
   const [messages, setMessages] = useState<Message[]>([
     { role: "ai", text: "Document loaded. Ask me anything about it." },
   ]);
@@ -18,24 +22,23 @@ export default function ChatWindow() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const send = async () => {
-    if (!input.trim() || loading) return;
-    const question = input.trim();
+  const send = async (question?: string) => {
+    const q = (question || input).trim();
+    if (!q || loading) return;
     setInput("");
     setLoading(true);
 
-    setMessages((m) => [...m, { role: "user", text: question }]);
+    setMessages((m) => [...m, { role: "user", text: q }]);
     setMessages((m) => [...m, { role: "ai", text: "", loading: true }]);
 
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL || "http://localhost:3001"}/api/upload`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question }),
-        },
-      );
+      const res = await fetch(`${API_URL}/api/query`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q }),
+      });
 
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
@@ -55,7 +58,7 @@ export default function ChatWindow() {
                 { role: "ai", text: aiText, loading: false },
               ]);
             } catch {
-              /* skip malformed */
+              /* skip */
             }
           }
         }
@@ -74,11 +77,7 @@ export default function ChatWindow() {
     setLoading(false);
   };
 
-  const suggestions = [
-    "Summarise this document",
-    "What are the key points?",
-    "What is SAML?",
-  ];
+  const showSuggestions = messages.length === 1 && suggestions.length > 0;
 
   return (
     <div className="chat">
@@ -102,10 +101,19 @@ export default function ChatWindow() {
         <div ref={bottomRef} />
       </div>
 
-      {messages.length === 1 && (
+      {/* Dynamic suggestions from document */}
+      {showSuggestions && (
         <div className="suggestions">
           {suggestions.map((s) => (
-            <button key={s} className="suggestion" onClick={() => setInput(s)}>
+            <button
+              key={s}
+              className="suggestion"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                send(s);
+              }}
+            >
               {s}
             </button>
           ))}
@@ -122,7 +130,7 @@ export default function ChatWindow() {
           className="chat-input"
         />
         <button
-          onClick={send}
+          onClick={() => send()}
           disabled={loading || !input.trim()}
           className="send-btn"
         >
