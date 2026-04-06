@@ -14,51 +14,51 @@ export default function FileUpload({ onUploaded }: Props) {
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       const file = acceptedFiles[0];
-      if (!file) {
-        console.error("No file in acceptedFiles:", acceptedFiles);
-        return;
-      }
+      if (!file) return;
 
-      console.log("File selected:", file.name, file.size, file.type);
+      console.log("File selected:", file.name, file.size, "bytes");
       setStatus("uploading");
-      setProgress("Reading document...");
+      setProgress("Uploading document...");
 
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
-      console.log("API URL:", API_URL);
+      console.log("Uploading to:", `${API_URL}/api/upload`);
+
+      const formData = new FormData();
+      formData.append("pdf", file, file.name);
+
+      // Verify FormData has the file
+      const entry = formData.get("pdf");
+      console.log(
+        "FormData pdf field:",
+        entry instanceof File ? `File: ${(entry as File).name}` : "NOT A FILE",
+      );
 
       try {
-        setProgress("Uploading...");
+        setProgress("Generating embeddings...");
 
-        // Build FormData
-        const formData = new FormData();
-        formData.append("pdf", file, file.name);
-
-        // Log what's in the FormData
-        for (const [key, value] of formData.entries()) {
-          console.log("FormData entry:", key, value);
-        }
-
-        const res = await fetch(`${API_URL}/api/upload`, {
+        const response = await fetch(`${API_URL}/api/upload`, {
           method: "POST",
           body: formData,
-          // NO Content-Type header — let browser set multipart/form-data + boundary
+          // CRITICAL: Do NOT set Content-Type header
+          // Browser must set it automatically with multipart boundary
         });
 
-        console.log("Response status:", res.status);
+        const responseText = await response.text();
+        console.log("Upload response:", response.status, responseText);
 
-        const text = await res.text();
-        console.log("Response text:", text);
-
-        if (!res.ok) {
-          throw new Error(`Upload failed ${res.status}: ${text}`);
+        if (!response.ok) {
+          throw new Error(
+            `Upload failed (${response.status}): ${responseText}`,
+          );
         }
 
-        const data = JSON.parse(text);
+        const data = JSON.parse(responseText);
+        console.log("Upload success:", data);
         setProgress(`Indexed ${data.chunks} chunks`);
         setStatus("done");
-        setTimeout(() => onUploaded(file.name), 800);
+        setTimeout(() => onUploaded(file.name), 600);
       } catch (err: any) {
-        console.error("Upload error:", err);
+        console.error("Upload failed:", err.message);
         setStatus("error");
         setProgress(err.message || "Upload failed. Try again.");
       }
@@ -71,8 +71,6 @@ export default function FileUpload({ onUploaded }: Props) {
     accept: { "application/pdf": [".pdf"] },
     multiple: false,
     disabled: status === "uploading",
-    noClick: false,
-    noKeyboard: false,
   });
 
   return (

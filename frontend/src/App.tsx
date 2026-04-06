@@ -3,9 +3,23 @@ import FileUpload from "./components/FileUpload";
 import ChatWindow from "./components/ChatWindow";
 import "./App.css";
 
+type AppState = "upload" | "chat";
+
 export default function App() {
-  const [uploaded, setUploaded] = useState(false);
+  const [appState, setAppState] = useState<AppState>("upload");
   const [filename, setFilename] = useState("");
+
+  function handleUploaded(name: string) {
+    console.log("Upload complete, switching to chat. Filename:", name);
+    setFilename(name);
+    setAppState("chat");
+  }
+
+  function handleNewDocument() {
+    console.log("Resetting to upload state");
+    setAppState("upload");
+    setFilename("");
+  }
 
   return (
     <div className="app">
@@ -20,7 +34,7 @@ export default function App() {
       </header>
 
       <main className="main">
-        {!uploaded ? (
+        {appState === "upload" ? (
           <div className="upload-section">
             <div className="upload-hero">
               <h1>
@@ -32,18 +46,13 @@ export default function App() {
                 Upload any document and ask questions about it in plain English.
               </p>
             </div>
-            <FileUpload
-              onUploaded={(name) => {
-                setFilename(name);
-                setUploaded(true);
-              }}
-            />
+            <FileUpload onUploaded={handleUploaded} />
           </div>
         ) : (
           <div className="chat-section">
             <div className="chat-header">
               <span className="file-badge">◈ {filename}</span>
-              <button className="new-doc" onClick={() => setUploaded(false)}>
+              <button className="new-doc" onClick={handleNewDocument}>
                 + New document
               </button>
             </div>
